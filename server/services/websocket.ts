@@ -12,7 +12,10 @@ export class WebSocketService {
   private clients: Map<string, Set<WebSocket>> = new Map();
 
   constructor(server: Server) {
-    this.wss = new WebSocketServer({ server });
+    this.wss = new WebSocketServer({ 
+      server,
+      path: '/ws/api' // Use a specific path to avoid conflicts with Vite's WebSocket
+    });
     this.setupWebSocketServer();
   }
 
@@ -70,16 +73,15 @@ export class WebSocketService {
   }
 
   private removeClient(ws: WebSocket) {
-    for (const [userId, clients] of this.clients.entries()) {
+    this.clients.forEach((clients, userId) => {
       if (clients.has(ws)) {
         clients.delete(ws);
         if (clients.size === 0) {
           this.clients.delete(userId);
         }
         console.log(`Client removed for user: ${userId}`);
-        break;
       }
-    }
+    });
   }
 
   private sendMessage(ws: WebSocket, message: WebSocketMessage) {

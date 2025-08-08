@@ -21,9 +21,9 @@ export function useWebSocket() {
 
     setConnectionStatus('connecting');
     
-    // Use the current domain for WebSocket connection
+    // Use the current domain for WebSocket connection with specific path
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}`;
+    const wsUrl = `${protocol}//${window.location.host}/ws/api`;
     
     ws.current = new WebSocket(wsUrl);
 
