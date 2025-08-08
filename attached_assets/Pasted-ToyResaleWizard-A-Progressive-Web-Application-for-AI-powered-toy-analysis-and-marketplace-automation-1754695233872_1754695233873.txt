@@ -1,0 +1,216 @@
+ToyResaleWizard
+A Progressive Web Application for AI-powered toy analysis and marketplace automation. Identify toys through camera capture, get pricing estimates, and automatically list on eBay, Amazon, and WordPress with real-time status updates.
+
+🚀 Quick Start (Demo Mode)
+The app runs completely in demo mode with no external API keys required:
+
+# Install dependencies
+pip install -r requirements.txt
+cd frontend && npm install
+
+# Start backend (Terminal 1)
+cd backend
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# Start frontend (Terminal 2)  
+cd frontend
+npm run dev
+Visit http://localhost:5173 to use the app with realistic mock data.
+
+📱 Features
+✅ Fully Functional (No API Keys Needed)
+Camera Capture - Use device camera to photograph toys
+Image Upload - Upload photos from device gallery
+PWA Functionality - Install app, offline mode, push notifications
+Real-time Updates - WebSocket connections for live status updates
+Database Storage - PostgreSQL/SQLite for scan and listing history
+Responsive Design - Mobile-first UI with touch optimization
+🎭 Mock Services (Demo Mode)
+AI Toy Analysis - Simulated toy identification and condition assessment
+Pricing Estimates - Mock marketplace pricing with realistic data
+Marketplace Listings - Simulated eBay, Amazon, WordPress posting
+Email Notifications - Console-logged email confirmations
+Payment Processing - Mock Stripe checkout for pro features
+⚙️ Configuration
+Environment Setup
+Copy environment template:
+cp .env.example .env
+Demo Mode (Default) - All services use mocks:
+USE_MOCK_AI=true
+USE_MOCK_MARKETPLACE=true  
+USE_MOCK_EMAIL=true
+USE_MOCK_PAYMENTS=true
+Production Mode - Set flags to false and add API keys:
+USE_MOCK_AI=false
+OPENAI_API_KEY=sk-your-key-here
+Service Providers
+Service	Mock Default	Live Provider	API Key Required
+AI Vision	✅	OpenAI GPT-4 Vision	OPENAI_API_KEY
+Marketplace	✅	eBay/Amazon APIs	EBAY_CLIENT_ID, AMAZON_ACCESS_KEY
+Email	✅	SMTP (Gmail)	SMTP_USERNAME, SMTP_PASSWORD
+Payments	✅	Stripe	STRIPE_SECRET_KEY
+Database	SQLite	PostgreSQL	DATABASE_URL
+🔑 Getting API Keys
+OpenAI (AI Vision)
+Visit https://platform.openai.com/api-keys
+Create account ($5 free credits included)
+Generate API key
+Set USE_MOCK_AI=false
+eBay Developer
+Visit https://developer.ebay.com/
+Create developer account
+Create application for Client ID/Secret
+Set USE_MOCK_MARKETPLACE=false
+Stripe (Payments)
+Visit https://dashboard.stripe.com/register
+Complete account setup
+Copy API keys from dashboard
+Set USE_MOCK_PAYMENTS=false
+🏗️ Architecture
+ToyResaleWizard/
+├── backend/           # FastAPI + SQLAlchemy
+│   ├── main.py       # App entry point
+│   ├── config.py     # Environment & feature flags
+│   ├── database.py   # Models & DB connection
+│   ├── routers/      # API endpoints
+│   └── services/     # Mock & live service providers
+├── frontend/         # React + Vite PWA
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   └── hooks/
+│   └── public/       # PWA assets
+└── .env.example      # Configuration template
+Clean Service Architecture
+Each external service has a factory pattern with mock and live implementations:
+
+# Automatic service selection based on config
+ai_service = AIService()        # MockAIService or OpenAIVisionService
+marketplace = MarketplaceService()  # MockMarketplace or LiveMarketplace
+Toggle any service from mock to live by changing environment variables:
+
+USE_MOCK_AI=false      # Switch to OpenAI
+USE_MOCK_EMAIL=false   # Switch to SMTP
+🧪 Testing
+End-to-End Happy Path
+# Run E2E test
+python -m pytest tests/test_e2e.py -v
+
+# Test flow:
+# 1. Upload toy image → AI analysis
+# 2. View pricing estimates → Historical data  
+# 3. Create marketplace listing → Real-time status
+# 4. Contact seller → Email notification
+# 5. Pro valuation → Payment processing
+API Testing
+# Start backend
+uvicorn backend.main:app --reload
+
+# Test endpoints
+curl http://localhost:8000/health
+curl -X POST http://localhost:8000/api/v1/toys/analyze \
+  -F "file=@toy_image.jpg"
+🚀 Deployment
+Replit Deployment
+Connect Repository - Import this GitHub repo to Replit
+Set Environment Variables - Add API keys in Secrets tab
+Deploy - Click "Deploy" button for automatic deployment
+Manual Deployment
+# Build frontend
+cd frontend && npm run build
+
+# Start production server
+cd backend && uvicorn main:app --host 0.0.0.0 --port 8000
+Docker Deployment
+# Build and run
+docker-compose up --build
+
+# App available at http://localhost:8000
+📊 Monitoring & Health Checks
+Health Endpoint
+curl http://localhost:8000/health
+Response:
+
+{
+  "status": "healthy",
+  "version": "1.0.0", 
+  "mock_mode": {
+    "ai_vision": true,
+    "marketplace": true,
+    "email": true,
+    "payments": true
+  }
+}
+Logs & Debugging
+Backend Logs:
+
+# View service logs
+tail -f backend/logs/app.log
+
+# Mock service outputs
+grep "MOCK EMAIL\|MOCK PAYMENT" backend/logs/app.log
+Frontend Debugging:
+
+Open DevTools → Console for WebSocket messages
+Network tab shows API requests/responses
+Application tab shows PWA cache status
+Common Issues
+Issue	Solution
+"Mock service not responding"	Check USE_MOCK_* flags in .env
+"WebSocket connection failed"	Verify backend running on port 8000
+"Image upload fails"	Check uploads/ directory permissions
+"Database connection error"	Verify DATABASE_URL or use SQLite fallback
+🔧 Runbook
+Daily Operations
+Monitor Health: Check /health endpoint shows all services healthy
+Check Logs: Review error logs for failed external API calls
+Database Cleanup: Clean old scan images and expired sessions
+Performance: Monitor WebSocket connection counts
+Service Status
+# Check which services are live vs mock
+curl http://localhost:8000/health | jq '.mock_mode'
+
+# Test external API connectivity
+curl http://localhost:8000/api/v1/toys/analyze -F "file=@test.jpg"
+Troubleshooting
+API Key Issues:
+
+# Verify API keys are loaded
+python -c "from backend.config import settings; print(settings.OPENAI_API_KEY[:10] if settings.OPENAI_API_KEY else 'Not set')"
+Service Connectivity:
+
+# Test OpenAI
+curl -H "Authorization: Bearer $OPENAI_API_KEY" https://api.openai.com/v1/models
+
+# Test eBay  
+curl "https://api.ebay.com/buy/browse/v1/item_summary/search?q=toy&limit=1" \
+  -H "Authorization: Bearer $EBAY_ACCESS_TOKEN"
+📈 Production Considerations
+Security
+Use environment variables for all secrets
+Enable HTTPS in production
+Configure CORS appropriately
+Add rate limiting for public endpoints
+Scaling
+Use Redis for session storage and caching
+Configure database connection pooling
+Set up load balancing for multiple instances
+Monitor and scale WebSocket connections
+Monitoring
+Set up error tracking (Sentry)
+Monitor API usage and quotas
+Track conversion rates and user engagement
+Set up alerts for service failures
+📄 License
+MIT License - see LICENSE file for details.
+
+🤝 Contributing
+Fork the repository
+Create feature branch (git checkout -b feature/AmazingFeature)
+Commit changes (git commit -m 'Add AmazingFeature')
+Push to branch (git push origin feature/AmazingFeature)
+Open Pull Request
+📞 Support
+Issues: GitHub Issues
+Docs: Full Documentation
+Email: support@toyresale.com
