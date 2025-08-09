@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.toyresalewizard.app',
   appName: 'ToyResaleWizard',
-  webDir: 'client/dist',
+  webDir: 'dist/public',
   server: {
     androidScheme: 'https'
   },
