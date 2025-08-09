@@ -7,6 +7,9 @@ FlipperZap (rebranded from ToyResaleWizard) is a Progressive Web Application (PW
 - **API route aliases:** Added `/api/v1/analysis/analyze-item` and pricing endpoints for generalized item analysis
 - **UI updates:** Changed "toy" → "item" throughout user interface while preserving all functionality
 - **Mobile IDs:** iOS bundle `com.flipperzap.app`, Android package `com.flipperzap.app`
+- **Store compliance:** Mobile payment compliance, external link handling, and native sharing implemented
+- **Staging deployment:** Complete Railway/Render deployment configuration with HTTPS health checks
+- **Store submission ready:** Complete documentation, assets specification, and deployment guides created
 
 # User Preferences
 

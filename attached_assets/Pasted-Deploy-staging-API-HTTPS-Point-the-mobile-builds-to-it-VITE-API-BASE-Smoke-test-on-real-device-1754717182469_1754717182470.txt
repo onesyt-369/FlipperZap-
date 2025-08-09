@@ -1,0 +1,104 @@
+Deploy staging API (HTTPS)
+
+Point the mobile builds to it (VITE_API_BASE)
+
+Smoke test on real devices
+
+Prepare/store assets (icons, screenshots, copy)
+
+Submit to TestFlight & Closed Testing
+
+2) Staging API quick deploy (Railway/Render)
+Env (staging)
+
+ini
+Copy
+Edit
+APP_ENV=demo
+ANALYSIS_PROVIDER=mock
+PRICING_PROVIDER=mock
+EMAIL_PROVIDER=log
+PAYMENTS_PROVIDER=demo
+
+AFFILIATE_AMZ_TAG=yourid-20
+AFFILIATE_EBAY_CAMPID=123456
+AFFILIATE_EBAY_CUSTOMID=FZ
+
+DATABASE_URL=postgres://...   # staging DB
+API_BASE_URL=https://api-staging.flipperzap.com
+CORS_ORIGINS=https://staging.flipperzap.app,capacitor://localhost,http://localhost
+CORS (FastAPI)
+
+python
+Copy
+Edit
+from fastapi.middleware.cors import CORSMiddleware
+origins = [o.strip() for o in os.getenv("CORS_ORIGINS","").split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins or ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+Checklist
+
+Create Postgres (staging), run migrations.
+
+Deploy FastAPI container, map to HTTPS domain (e.g., api-staging.flipperzap.com).
+
+Verify: /healthz, /readyz, /sitemap.xml, and one analysis call.
+
+Turn on basic logs and rate limits (you already have this).
+
+Mobile config
+
+Set VITE_API_BASE=https://api-staging.flipperzap.com.
+
+Rebuild iOS (TestFlight) & Android (.aab).
+
+On device: scan → results → create listing → contact seller (log seen).
+
+3) Copy-paste message to send back to Replit
+Subject: FlipperZap – please deploy staging API & point mobile builds
+
+Hey! Can you deploy a staging FastAPI over HTTPS and then point the mobile builds to it?
+
+What to do
+
+Deploy backend to https://api-staging.flipperzap.com (or your staging URL).
+Env should be:
+
+ini
+Copy
+Edit
+APP_ENV=demo
+ANALYSIS_PROVIDER=mock
+PRICING_PROVIDER=mock
+EMAIL_PROVIDER=log
+PAYMENTS_PROVIDER=demo
+DATABASE_URL=<staging>
+CORS_ORIGINS=https://staging.flipperzap.app,capacitor://localhost,http://localhost
+Ensure CORS is enabled as above; run DB migrations.
+
+Share the staging URL; I’ll plug it into VITE_API_BASE.
+
+Build TestFlight (internal) and Android Closed test pointing at staging.
+
+Send a 30–60s device recording: scan → results → create listing → open /listing/:slug → contact seller (logged).
+
+Thanks! Once that’s green, we’ll finish screenshots/text and submit.
+
+4) Store assets pack (quick list)
+App name: FlipperZap – Scan, Price & List
+
+Subtitle (iOS): AI pricing & listings for resellers
+
+Short desc (Play): Scan → price → list. For flippers.
+
+Long description (starter, 4–6 lines):
+“FlipperZap helps resellers scan items, see instant price ranges from recent sales, and create listings fast. Use AI-powered analysis, suggested titles, and a commission-free listing page. Works offline, opens affiliate comps in your browser, and proxies buyer messages to protect privacy. Ideal for toys, electronics, sneakers, and vintage finds.”
+
+Keywords: resale, flipping, eBay, marketplace, price checker, barcode scanner, thrifting, comps
+
+Screenshots to capture: Scan, Results (value band), Recent comps, Shop buttons, Create Listing, Public listing page.
