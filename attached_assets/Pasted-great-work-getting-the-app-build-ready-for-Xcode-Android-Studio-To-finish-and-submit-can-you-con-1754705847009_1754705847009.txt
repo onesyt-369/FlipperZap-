@@ -1,0 +1,105 @@
+great work getting the app build ready for Xcode/Android Studio 🙌
+To finish and submit, can you confirm/provide the items below? I want zero surprises at review time.
+
+1) Tech readiness (backend + PWA)
+✅ Deployed API base URL(s) for staging/prod (HTTPS):
+
+VITE_API_BASE = ______
+
+✅ Health checks: /healthz, /readyz return 200.
+
+✅ DEMO mode works end-to-end with no real API keys.
+
+✅ .env.example (front + back) includes all flags/keys and defaults to demo.
+
+✅ Provider flags wired: ANALYSIS_PROVIDER, PRICING_PROVIDER, EMAIL_PROVIDER, PAYMENTS_PROVIDER, etc.
+
+✅ Affiliate tags are env-driven and present in outbound links.
+
+✅ Public listing pages render with JSON-LD and are included in /sitemap.xml (indexable over HTTPS).
+
+2) iOS build (Xcode)
+App ID/bundle ID set (e.g., com.ourco.flipperzap).
+
+Automatic signing on; a build that runs on a physical device.
+
+Info.plist privacy strings added:
+
+NSCameraUsageDescription
+
+NSPhotoLibraryUsageDescription
+
+NSPhotoLibraryAddUsageDescription
+
+App Transport Security compliant (our API over HTTPS; no ATS exceptions).
+
+Payments policy: If Stripe is used for digital features, hide/disable those buttons on iOS for v1 (no external payments for digital content) and add a “Available on web” link.
+
+Archive/Distribution settings verified (TestFlight build compiles).
+
+3) Android build (Android Studio)
+applicationId, min/target SDK, versionCode/name set.
+
+Manifest permissions: CAMERA, INTERNET.
+
+Release App Bundle (.aab) builds with signing config.
+
+Payments policy: If Stripe is used for digital features, hide/disable those buttons on Android for v1 (Play Billing required) and add a “Available on web” link.
+
+4) Store assets & metadata (please provide files/text)
+App name, short description/subtitle, full description.
+
+App icons (iOS & Android, all sizes) + splash screen.
+
+6–8 screenshots per platform (placeholder ok for first submit) + optional short screen recording.
+
+Category, keywords, support email, marketing URL, Privacy Policy URL, Terms of Service URL.
+
+Data Safety (Android) / Privacy “Data Collection” (iOS) questionnaire: list data types used (camera, user content, contact, analytics).
+
+Third-party SDK list (if any) for disclosure.
+
+5) In-app UX polish (quick wins)
+External browser for affiliate links (do not open inside webview).
+
+“Share” button on Results/Listing pages (copies public URL / native share sheet).
+
+Client-side image compression before upload.
+
+Double-submit guards on “List” and “Contact Seller”.
+
+Basic rate limits (scans/messages) to avoid abuse.
+
+6) QA & acceptance
+Please run on real iOS and Android devices and share a 30–60s screen recording showing:
+
+Scan → Results (name, condition, price band).
+
+Pricing history (or clean empty state).
+
+Affiliate buttons opening externally.
+
+Create Listing → public /listing/:slug loads; shows in /sitemap.xml.
+
+Contact Seller → success toast; logged email in demo mode.
+
+Flip a provider flag to a non-configured value and confirm graceful fallback to mock.
+
+7) Hand-off docs (repo)
+README.md with local run, build, deploy, and env setup.
+
+RUNBOOK.md (logs, common errors, rotating env, health checks).
+
+.env.example (front/back).
+
+postman_collection.json or .http requests for all endpoints.
+
+iOS/Android readmes with step-by-step archive instructions.
+
+Keystore/provisioning instructions (how we’ll handle signing on our side).
+
+Once these are done: we’ll upload screenshots/text, create TestFlight / Closed Testing tracks, and submit for review.
+
+Can you confirm what’s already complete and give me an ETA for anything missing? If you need any copy (descriptions, privacy policy/TOS), say the word and I’ll drop it in.
+
+Thank you! 🚀

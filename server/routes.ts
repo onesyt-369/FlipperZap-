@@ -36,16 +36,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const marketplaceService = createMarketplaceService();
   const wsService = initializeWebSocketService(httpServer);
 
-  // Health check endpoint
+  // Kubernetes-style health checks
+  app.get('/healthz', async (req, res) => {
+    try {
+      res.status(200).json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        version: '1.0.0'
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: 'unhealthy',
+        error: 'Service unavailable',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  app.get('/readyz', async (req, res) => {
+    try {
+      // Test database connectivity
+      await storage.getScan('demo-scan-id');
+      
+      res.status(200).json({
+        status: 'ready',
+        timestamp: new Date().toISOString(),
+        version: '1.0.0',
+        services: {
+          database: 'connected',
+          ai_service: process.env.USE_MOCK_AI !== 'false' ? 'mock' : 'configured',
+          marketplace: process.env.USE_MOCK_MARKETPLACE !== 'false' ? 'mock' : 'configured'
+        }
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: 'not_ready',
+        error: 'Dependencies not available',
+        timestamp: new Date().toISOString(),
+        services: {
+          database: 'disconnected'
+        }
+      });
+    }
+  });
+
+  // Detailed health check endpoint
   app.get('/health', (req, res) => {
     res.json({
       status: 'healthy',
       version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
       mock_mode: {
         ai_vision: process.env.USE_MOCK_AI !== 'false',
         marketplace: process.env.USE_MOCK_MARKETPLACE !== 'false',
         email: process.env.USE_MOCK_EMAIL !== 'false',
         payments: process.env.USE_MOCK_PAYMENTS !== 'false'
+      },
+      providers: {
+        analysis: process.env.ANALYSIS_PROVIDER || 'mock',
+        pricing: process.env.PRICING_PROVIDER || 'mock',
+        email: process.env.EMAIL_PROVIDER || 'mock',
+        payments: process.env.PAYMENTS_PROVIDER || 'mock'
       }
     });
   });
