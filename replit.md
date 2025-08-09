@@ -5,6 +5,7 @@ ToyResaleWizard is a Progressive Web Application (PWA) that uses AI to analyze t
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+First-time app developer: Provide beginner-friendly explanations and step-by-step guidance.
 
 # System Architecture
 
