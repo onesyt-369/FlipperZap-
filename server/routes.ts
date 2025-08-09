@@ -169,8 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const scan = await storage.createScan({
         userId,
         imageUrl,
-        status: 'pending',
-        createdAt: new Date()
+        status: 'pending'
       });
 
       res.json({ 
