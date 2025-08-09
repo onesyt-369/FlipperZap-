@@ -1,0 +1,104 @@
+Goal
+Create a new project FlipperZap from the current ToyResaleWizard code, with a light UI rebrand and a couple of route aliases. Keep the backend/data as-is so demo keeps working. No new features yet.
+
+A) Repo & IDs
+Do NOT modify the ToyResaleWizard repo.
+
+Create a new repo named FlipperZap (copy of current code).
+
+Set mobile identifiers in FlipperZap:
+
+iOS bundle ID: com.flipperzap.app
+
+Android applicationId: com.flipperzap.app
+
+App display name: FlipperZap
+
+B) Light rebrand (UI only)
+Replace visible copy: “Toy / ToyResaleWizard” → “Item / FlipperZap” (titles, headings, buttons).
+
+Keep all flows identical: scan → results → comps/estimate → create listing → contact.
+
+Do not change DB table names yet.
+
+C) Backend compatibility (no risky migrations)
+Keep existing endpoints working.
+
+Add aliases that hit the same handlers:
+
+POST /api/v1/analysis/analyze-item → same as current analyze-toy
+
+GET /api/v1/pricing/history/{item_name} → reuse toy history logic
+
+GET /api/v1/pricing/estimate?... (unchanged)
+
+If easy, add a SQL view: item_analysis → SELECT * FROM toy_analysis (optional).
+
+D) Config & DEMO mode
+Copy .env.example files to the new repo (frontend + backend).
+
+Default flags to demo so it runs with no keys:
+
+ini
+Copy
+Edit
+APP_ENV=demo
+ANALYSIS_PROVIDER=mock
+PRICING_PROVIDER=mock
+EMAIL_PROVIDER=log
+PAYMENTS_PROVIDER=demo
+Affiliate tags read from env (same as toy build).
+
+Ensure bad/missing provider keys fail gracefully back to mock.
+
+E) Mobile compliance quick fixes
+Disable/hide Stripe buttons on iOS/Android builds (show “Available on web” link).
+
+Make sure affiliate links open externally (Safari/Chrome, not inside webview).
+
+If push isn’t fully wired, do not prompt for notifications.
+
+F) Acceptance checklist (please verify on real devices + send a 30–60s screen recording)
+Scan → Results shows item name, condition, value band.
+
+Pricing history: renders or clean empty state.
+
+Affiliate buttons open in the device browser with our tags.
+
+Create listing → public /listing/:slug loads and appears in /sitemap.xml.
+
+Contact seller → success toast; email logged in demo.
+
+The new alias route /api/v1/analysis/analyze-item returns a valid response.
+
+iOS/Android builds compile with the new IDs and app name.
+
+G) Deliverables
+Link to the new FlipperZap repo.
+
+Short note of what changed (UI copy + route aliases + IDs).
+
+TestFlight (internal) build + Android .aab in Closed testing (both still DEMO).
+
+The 30–60s device recording of the happy path.
+
+Do not add new features yet. This is only a rename + alias + IDs pass so my son can start building FlipperZap features in new PRs.
+
+Thanks!
+
+When they confirm done, ping me and I’ll hand your son a tiny “first PR” list (bulk CSV import + saved searches + price alerts) so he can start shipping features immediately while you jump to HugeMouth.
+
+
+
+
+
+
+
+
+Ask ChatGPT
+
+
+
+
+
+ChatGPT can make mistakes. OpenAI doesn't use john vallario's Workspace workspace data to train its models.

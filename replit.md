@@ -1,6 +1,12 @@
 # Overview
 
-ToyResaleWizard is a Progressive Web Application (PWA) that uses AI to analyze toys through camera capture or photo upload, providing pricing estimates and automated marketplace listing capabilities. The application is built with a React TypeScript frontend and Express.js backend, featuring a mobile-first design that can operate in both demo mode with mock services and production mode with real integrations.
+FlipperZap (rebranded from ToyResaleWizard) is a Progressive Web Application (PWA) that uses AI to analyze items through camera capture or photo upload, providing pricing estimates and automated marketplace listing capabilities. The application is built with a React TypeScript frontend and Express.js backend, featuring a mobile-first design that can operate in both demo mode with mock services and production mode with real integrations.
+
+## Recent Changes (January 2025)
+- **Complete rebrand:** ToyResaleWizard → FlipperZap with updated mobile app identifiers
+- **API route aliases:** Added `/api/v1/analysis/analyze-item` and pricing endpoints for generalized item analysis
+- **UI updates:** Changed "toy" → "item" throughout user interface while preserving all functionality
+- **Mobile IDs:** iOS bundle `com.flipperzap.app`, Android package `com.flipperzap.app`
 
 # User Preferences
 

@@ -1,7 +1,7 @@
 {
-  "name": "ToyResaleWizard",
-  "short_name": "ToyWizard",
-  "description": "AI-powered toy analysis and marketplace automation",
+  "name": "FlipperZap",
+  "short_name": "FlipperZap",
+  "description": "AI-powered item analysis and marketplace automation",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

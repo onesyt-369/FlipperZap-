@@ -159,6 +159,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // FlipperZap alias endpoints (for generalized item analysis)
+  app.post('/api/v1/analysis/analyze-item', upload.single('image'), async (req, res) => {
+    // Reuse existing scan logic but with new endpoint name
+    try {
+      const userId = req.headers['x-user-id'] as string || 'demo-user';
+      const imageUrl = req.file ? `/uploads/${req.file.filename}` : '';
+
+      const scan = await storage.createScan({
+        userId,
+        imageUrl,
+        status: 'pending',
+        createdAt: new Date()
+      });
+
+      res.json({ 
+        analysisId: scan.id, 
+        status: 'pending',
+        message: 'Item analysis started'
+      });
+
+      // Process AI analysis asynchronously (same as original scan logic)
+      try {
+        wsService.sendScanUpdate(userId, scan.id, 'analyzing');
+        
+        const analysis = await aiService.analyzeToy(imageUrl);
+        
+        const updatedScan = await storage.updateScan(scan.id, {
+          status: 'completed',
+          aiAnalysis: analysis,
+          estimatedPriceMin: analysis.estimatedPriceMin.toString(),
+          estimatedPriceMax: analysis.estimatedPriceMax.toString()
+        });
+
+        await storage.createToy({
+          name: analysis.toyName,
+          brand: analysis.brand,
+          category: analysis.category,
+          condition: analysis.condition,
+          description: analysis.description,
+          imageUrl,
+          aiAnalysis: analysis
+        });
+
+        wsService.sendScanUpdate(userId, scan.id, 'completed', updatedScan);
+      } catch (error) {
+        console.error('AI analysis failed:', error);
+        await storage.updateScan(scan.id, { status: 'failed' });
+        wsService.sendScanUpdate(userId, scan.id, 'failed', { error: error.message });
+      }
+    } catch (error) {
+      console.error('Item analysis failed:', error);
+      res.status(500).json({ error: 'Failed to analyze item' });
+    }
+  });
+
+  // Pricing history alias
+  app.get('/api/v1/pricing/history/:item_name', async (req, res) => {
+    try {
+      const itemName = req.params.item_name;
+      // Mock pricing history for demo mode
+      const history = [
+        { date: '2025-01-01', price: 45.99, condition: 8, marketplace: 'eBay' },
+        { date: '2024-12-15', price: 42.50, condition: 7, marketplace: 'Mercari' },
+        { date: '2024-12-01', price: 38.00, condition: 6, marketplace: 'Facebook' }
+      ];
+      res.json(history);
+    } catch (error) {
+      console.error('Failed to fetch pricing history:', error);
+      res.status(500).json({ error: 'Failed to fetch pricing history' });
+    }
+  });
+
+  // Pricing estimate alias  
+  app.get('/api/v1/pricing/estimate', async (req, res) => {
+    try {
+      const { item_name, condition } = req.query;
+      const basePrice = 40; // Mock base price
+      const conditionMultiplier = (parseInt(condition as string) || 7) / 10;
+      const low = Math.round(basePrice * conditionMultiplier * 0.8);
+      const high = Math.round(basePrice * conditionMultiplier * 1.3);
+      
+      res.json({
+        low,
+        high,
+        confidence: 0.82,
+        item_name,
+        condition: parseInt(condition as string)
+      });
+    } catch (error) {
+      console.error('Failed to get pricing estimate:', error);
+      res.status(500).json({ error: 'Failed to get pricing estimate' });
+    }
+  });
+
   app.get('/api/v1/scans', async (req, res) => {
     try {
       const userId = req.headers['x-user-id'] as string || 'demo-user';

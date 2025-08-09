@@ -108,7 +108,7 @@ export default function Home() {
         const result = await response.json();
         toast({
           title: "Analysis Started",
-          description: "Your toy is being analyzed. You'll see results shortly!",
+          description: "Your item is being analyzed. You'll see results shortly!",
         });
         
         // Refresh scans data
@@ -149,7 +149,7 @@ export default function Home() {
                 <i className="fas fa-robot text-white text-lg"></i>
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">ToyResaleWizard</h1>
+                <h1 className="text-lg font-bold text-gray-900">FlipperZap</h1>
                 <p className="text-xs text-gray-500">
                   {connectionStatus === 'connected' ? 'Connected' : 
                    connectionStatus === 'connecting' ? 'Connecting...' : 'Disconnected'}
@@ -182,7 +182,7 @@ export default function Home() {
         <section className="py-6">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Sell Your Toys with AI
+              Sell Your Items with AI
             </h2>
             <p className="text-gray-600">
               Snap a photo, get instant pricing, and list across multiple marketplaces
