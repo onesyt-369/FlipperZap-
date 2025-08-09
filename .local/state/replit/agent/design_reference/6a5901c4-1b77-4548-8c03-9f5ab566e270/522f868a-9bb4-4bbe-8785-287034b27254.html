@@ -1,0 +1,411 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToyResaleWizard - AI-Powered Toy Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8'
+                        },
+                        secondary: {
+                            500: '#06b6d4',
+                            600: '#0891b2'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- @COMPONENT: PWAInstallBanner -->
+    <div id="pwa-banner" class="hidden bg-primary-600 text-white p-4 text-center relative">
+        <p class="text-sm font-medium">Install ToyResaleWizard for the best experience!</p>
+        <button id="install-button" class="bg-white text-primary-600 px-4 py-1 rounded-full text-sm font-medium mt-2 mr-2">
+            Install App
+        </button>
+        <button id="dismiss-banner" class="absolute top-2 right-2 text-white">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <!-- @END_COMPONENT: PWAInstallBanner -->
+
+    <!-- @COMPONENT: TopNavigation -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-lg mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-primary-500 p-2 rounded-lg">
+                        <i class="fas fa-robot text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-900">ToyResaleWizard</h1>
+                        <p class="text-xs text-gray-500" data-bind="connectionStatus">Connected</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <!-- @STATE: notifications:array = [] -->
+                    <button class="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg" data-event="click:showNotifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" data-bind="notifications.length">3</span>
+                    </button>
+                    <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg" data-event="click:showMenu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: TopNavigation -->
+
+    <!-- @COMPONENT: MainContent -->
+    <main class="max-w-lg mx-auto px-4 pb-20">
+        <!-- Hero Section -->
+        <section class="py-6">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Sell Your Toys with AI</h2>
+                <p class="text-gray-600">Snap a photo, get instant pricing, and list across multiple marketplaces</p>
+            </div>
+
+            <!-- @STATE: isCapturing:boolean = false -->
+            <!-- Camera/Upload Section -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Camera Capture -->
+                    <button class="flex flex-col items-center justify-center py-8 border-2 border-dashed border-primary-300 rounded-xl bg-primary-50 hover:bg-primary-100 transition-colors" data-event="click:openCamera" data-implementation="Access device camera for toy photography">
+                        <i class="fas fa-camera text-primary-500 text-2xl mb-3"></i>
+                        <span class="text-primary-700 font-medium">Take Photo</span>
+                        <span class="text-xs text-primary-600 mt-1">Use Camera</span>
+                    </button>
+
+                    <!-- File Upload -->
+                    <button class="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors" data-event="click:openFileUpload" data-implementation="Open file picker for image upload">
+                        <i class="fas fa-upload text-gray-500 text-2xl mb-3"></i>
+                        <span class="text-gray-700 font-medium">Upload</span>
+                        <span class="text-xs text-gray-600 mt-1">From Gallery</span>
+                    </button>
+                </div>
+
+                <!-- Quick Tips -->
+                <div class="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div class="flex items-start space-x-2">
+                        <i class="fas fa-lightbulb text-yellow-600 text-sm mt-0.5"></i>
+                        <div class="text-sm text-yellow-800">
+                            <span class="font-medium">Pro Tip:</span> Take photos in good lighting with the toy clearly visible for best AI analysis
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Scans Section -->
+        <!-- @STATE: recentScans:array = [] -->
+        <section class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Recent Scans</h3>
+                <button class="text-primary-600 text-sm font-medium" data-event="click:viewAllScans">View All</button>
+            </div>
+
+            <!-- @MAP: recentScans.map(scan => ( -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-3" data-mock="true">
+                <div class="flex items-center space-x-3">
+                    <!-- Mock toy image -->
+                    <!-- A colorful LEGO building set displayed on white background -->
+                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="LEGO building set" class="w-16 h-16 rounded-lg object-cover" data-bind="scan.imageUrl" />
+                    
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-medium text-gray-900 truncate" data-bind="scan.toyName">LEGO Creator Building Set</h4>
+                        <p class="text-sm text-gray-600" data-bind="scan.condition">Good Condition</p>
+                        <div class="flex items-center justify-between mt-1">
+                            <span class="text-lg font-bold text-green-600" data-bind="scan.estimatedPrice">$45-65</span>
+                            <span class="text-xs text-gray-500" data-bind="scan.scannedAt">2 hours ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col space-y-1">
+                        <!-- Real-time status indicator -->
+                        <div class="flex items-center space-x-1">
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse" data-bind="scan.status === 'listed'"></div>
+                            <span class="text-xs text-green-600 font-medium" data-bind="scan.statusText">Listed</span>
+                        </div>
+                        <button class="text-primary-600 text-xs font-medium" data-event="click:viewScanDetails" data-implementation="Navigate to scan detail view">
+                            Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-3" data-mock="true">
+                <div class="flex items-center space-x-3">
+                    <!-- A vintage Barbie doll in original packaging -->
+                    <img src="https://images.unsplash.com/photo-1571068316344-75bc76f77890?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100" alt="Vintage Barbie doll" class="w-16 h-16 rounded-lg object-cover" data-bind="scan.imageUrl" />
+                    
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-medium text-gray-900 truncate" data-bind="scan.toyName">Vintage Barbie Doll</h4>
+                        <p class="text-sm text-gray-600" data-bind="scan.condition">Mint in Package</p>
+                        <div class="flex items-center justify-between mt-1">
+                            <span class="text-lg font-bold text-green-600" data-bind="scan.estimatedPrice">$120-180</span>
+                            <span class="text-xs text-gray-500" data-bind="scan.scannedAt">1 day ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col space-y-1">
+                        <div class="flex items-center space-x-1">
+                            <div class="w-2 h-2 bg-yellow-400 rounded-full" data-bind="scan.status === 'processing'"></div>
+                            <span class="text-xs text-yellow-600 font-medium" data-bind="scan.statusText">Processing</span>
+                        </div>
+                        <button class="text-primary-600 text-xs font-medium" data-event="click:viewScanDetails">
+                            Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_MAP )) -->
+
+            <!-- Empty State -->
+            <div class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center" id="empty-scans" data-show-when="recentScans.length === 0">
+                <i class="fas fa-history text-gray-400 text-3xl mb-3"></i>
+                <h4 class="font-medium text-gray-900 mb-1">No scans yet</h4>
+                <p class="text-sm text-gray-600">Start by taking a photo or uploading an image of your toy</p>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <button class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center hover:bg-gray-50 transition-colors" data-event="click:viewPriceHistory">
+                    <i class="fas fa-chart-line text-secondary-500 text-xl mb-2"></i>
+                    <div class="text-sm font-medium text-gray-900">Price History</div>
+                    <div class="text-xs text-gray-600">Market trends</div>
+                </button>
+                
+                <button class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center hover:bg-gray-50 transition-colors" data-event="click:manageListings">
+                    <i class="fas fa-store text-orange-500 text-xl mb-2"></i>
+                    <div class="text-sm font-medium text-gray-900">My Listings</div>
+                    <div class="text-xs text-gray-600">Active sales</div>
+                </button>
+                
+                <button class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center hover:bg-gray-50 transition-colors" data-event="click:viewAnalytics">
+                    <i class="fas fa-analytics text-purple-500 text-xl mb-2"></i>
+                    <div class="text-sm font-medium text-gray-900">Analytics</div>
+                    <div class="text-xs text-gray-600">Performance</div>
+                </button>
+                
+                <button class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center hover:bg-gray-50 transition-colors" data-event="click:showSettings">
+                    <i class="fas fa-cog text-gray-500 text-xl mb-2"></i>
+                    <div class="text-sm font-medium text-gray-900">Settings</div>
+                    <div class="text-xs text-gray-600">Preferences</div>
+                </button>
+            </div>
+        </section>
+
+        <!-- Marketplace Status -->
+        <section class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Marketplace Status</h3>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <div class="space-y-3">
+                    <!-- eBay Status -->
+                    <div class="flex items-center justify-between py-2">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-ebay text-blue-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-900">eBay</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-green-400 rounded-full" data-bind="marketplaces.ebay.connected"></div>
+                            <span class="text-sm text-green-600 font-medium" data-mock="true">Connected</span>
+                        </div>
+                    </div>
+
+                    <!-- Amazon Status -->
+                    <div class="flex items-center justify-between py-2">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-amazon text-orange-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-900">Amazon</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-yellow-400 rounded-full" data-bind="marketplaces.amazon.connected"></div>
+                            <span class="text-sm text-yellow-600 font-medium" data-mock="true">Setup Required</span>
+                        </div>
+                    </div>
+
+                    <!-- WordPress Status -->
+                    <div class="flex items-center justify-between py-2">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-wordpress text-blue-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-900">WordPress</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-green-400 rounded-full" data-bind="marketplaces.wordpress.connected"></div>
+                            <span class="text-sm text-green-600 font-medium" data-mock="true">Connected</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="w-full mt-4 bg-primary-50 text-primary-700 py-2 rounded-lg text-sm font-medium hover:bg-primary-100 transition-colors" data-event="click:configureMarketplaces">
+                    Configure Marketplaces
+                </button>
+            </div>
+        </section>
+    </main>
+    <!-- @END_COMPONENT: MainContent -->
+
+    <!-- @COMPONENT: BottomNavigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
+        <div class="max-w-lg mx-auto">
+            <div class="flex justify-around py-2">
+                <button class="flex flex-col items-center justify-center py-2 px-3 text-primary-600" data-event="click:navigateHome" data-implementation="Navigate to home screen">
+                    <i class="fas fa-home text-lg"></i>
+                    <span class="text-xs font-medium mt-1">Home</span>
+                </button>
+                
+                <button class="flex flex-col items-center justify-center py-2 px-3 text-gray-600 hover:text-primary-600" data-event="click:navigateScans">
+                    <i class="fas fa-history text-lg"></i>
+                    <span class="text-xs font-medium mt-1">Scans</span>
+                </button>
+                
+                <button class="flex flex-col items-center justify-center py-2 px-3 bg-primary-600 text-white rounded-lg mx-2" data-event="click:quickScan" data-implementation="Open camera for quick toy scan">
+                    <i class="fas fa-camera text-lg"></i>
+                    <span class="text-xs font-medium mt-1">Scan</span>
+                </button>
+                
+                <button class="flex flex-col items-center justify-center py-2 px-3 text-gray-600 hover:text-primary-600" data-event="click:navigateListings">
+                    <i class="fas fa-store text-lg"></i>
+                    <span class="text-xs font-medium mt-1">Listings</span>
+                </button>
+                
+                <button class="flex flex-col items-center justify-center py-2 px-3 text-gray-600 hover:text-primary-600" data-event="click:navigateProfile">
+                    <i class="fas fa-user text-lg"></i>
+                    <span class="text-xs font-medium mt-1">Profile</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: BottomNavigation -->
+
+    <!-- @COMPONENT: LoadingOverlay -->
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" data-show-when="isLoading">
+        <div class="bg-white rounded-xl p-6 max-w-sm mx-4 text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+            <h4 class="font-medium text-gray-900 mb-2" data-bind="loadingMessage">Analyzing your toy...</h4>
+            <p class="text-sm text-gray-600">This may take a few moments</p>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: LoadingOverlay -->
+
+    <!-- @COMPONENT: WebSocketStatus -->
+    <div id="websocket-status" class="fixed top-16 left-4 right-4 max-w-lg mx-auto z-30" data-show-when="showConnectionStatus">
+        <div class="bg-green-100 border border-green-200 text-green-800 px-4 py-2 rounded-lg text-sm flex items-center space-x-2" data-bind="wsConnected">
+            <i class="fas fa-wifi text-green-600"></i>
+            <span>Real-time updates connected</span>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: WebSocketStatus -->
+
+    <script>
+        (function() {
+            // TODO: Implement PWA installation logic
+            // TODO: Implement WebSocket connection for real-time updates
+            // TODO: Implement camera access and image upload functionality
+            // TODO: Implement navigation between different app sections
+            // TODO: Implement service worker for offline functionality
+
+            // Mock WebSocket connection status
+            let wsConnected = true;
+            const statusElement = document.querySelector('[data-bind="connectionStatus"]');
+            if (statusElement) {
+                statusElement.textContent = wsConnected ? 'Connected' : 'Connecting...';
+            }
+
+            // PWA installation prompt
+            let deferredPrompt;
+            const installButton = document.getElementById('install-button');
+            const pwaBanner = document.getElementById('pwa-banner');
+            const dismissBanner = document.getElementById('dismiss-banner');
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                pwaBanner.classList.remove('hidden');
+            });
+
+            if (installButton) {
+                installButton.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        deferredPrompt = null;
+                        pwaBanner.classList.add('hidden');
+                    }
+                });
+            }
+
+            if (dismissBanner) {
+                dismissBanner.addEventListener('click', () => {
+                    pwaBanner.classList.add('hidden');
+                });
+            }
+
+            // Touch optimization for mobile
+            document.addEventListener('touchstart', function() {}, {passive: true});
+
+            // Simulate real-time updates
+            function simulateRealtimeUpdates() {
+                const statusElements = document.querySelectorAll('[data-bind*="status"]');
+                // TODO: Replace with actual WebSocket implementation
+                console.log('WebSocket connection established for real-time updates');
+            }
+
+            // Initialize app
+            document.addEventListener('DOMContentLoaded', function() {
+                simulateRealtimeUpdates();
+                
+                // Show connection status briefly
+                const wsStatus = document.getElementById('websocket-status');
+                if (wsStatus) {
+                    wsStatus.style.display = 'block';
+                    setTimeout(() => {
+                        wsStatus.style.display = 'none';
+                    }, 3000);
+                }
+            });
+
+            // Service Worker registration
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then((registration) => {
+                            console.log('SW registered: ', registration);
+                        })
+                        .catch((registrationError) => {
+                            console.log('SW registration failed: ', registrationError);
+                        });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
