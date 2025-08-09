@@ -1,0 +1,469 @@
+
+FlipperZap — Build Brief (from ToyResaleWizard)
+Goal
+Rebrand/generalize ToyResaleWizard → FlipperZap (all-category reseller hub) using the existing stack. Ship a PWA + FastAPI that works fully without real API keys via mock providers, with clean sockets to go live later.
+
+Deliverables
+Monorepo with frontend/ (React+Vite PWA), backend/ (FastAPI+Postgres), infra/ (Docker).
+
+All external services behind provider interfaces (mock by default, real stubs wired to env).
+
+Working DEMO flow: scan → analysis → comps/estimate → affiliate → create public listing → contact relay (logged) → sitemap.
+
+Pro tier gates & stubs: $0.99 Pro valuation (demo) + $19/mo FlipperZap Pro (demo).
+
+.env.example (front/back), README, RUNBOOK, and Postman/.http requests.
+
+Deployed to Vercel (PWA) + Railway (API+DB) in DEMO, passing acceptance checklist.
+
+Repo Structure
+bash
+Copy
+Edit
+flipperzap/
+  frontend/             # React + Vite + Tailwind + Router
+    src/
+      pages/            # Home, Results, Listing, Pro, Directory, Admin(min)
+      components/
+      lib/api.ts
+      main.tsx
+      App.tsx
+    index.html
+    vite.config.ts
+    package.json
+    .env.example
+  backend/              # FastAPI + SQLAlchemy
+    app/
+      main.py
+      core/config.py
+      db/models.py
+      db/session.py
+      services/
+        analysis/ (base.py, mock_provider.py, openai_provider_stub.py)
+        pricing/  (base.py, mock_provider.py, ebay_provider_stub.py)
+        marketplace/ (base.py, mock_provider.py, ebay_stub.py, etc.)
+        email/ (base.py, log_provider.py, sendgrid_stub.py)
+        payments/ (base.py, demo_provider.py, stripe_stub.py)
+        registry.py
+      api/routes/
+        analysis.py
+        pricing.py
+        listings.py
+        pro.py
+        health.py
+        seo.py      # sitemap, robots
+      utils/security.py
+    requirements.txt
+    .env.example
+    Dockerfile
+  infra/
+    docker-compose.dev.yml
+    railway.json (optional)
+  README.md
+  RUNBOOK.md
+  postman_collection.json (or http/requests.http)
+Environment Variables
+backend/.env.example
+makefile
+Copy
+Edit
+APP_ENV=demo                # demo | staging | prod
+DATABASE_URL=postgres://user:pass@localhost:5432/flipperzap
+REDIS_URL=                  # optional
+
+# Feature flags (per service)
+ANALYSIS_PROVIDER=mock      # mock | openai
+PRICING_PROVIDER=mock       # mock | ebay_api
+MARKETPLACE_SYNC=off        # off | ebay | amazon | mercari | poshmark | fb | craigslist | multi
+EMAIL_PROVIDER=log          # log | sendgrid
+PAYMENTS_PROVIDER=demo      # demo | stripe
+
+# Affiliate (used both server/client)
+AFFILIATE_AMZ_TAG=yourid-20
+AFFILIATE_EBAY_CAMPID=123456
+AFFILIATE_EBAY_CUSTOMID=FZ
+
+# Live keys (leave blank in demo)
+OPENAI_API_KEY=
+EBAY_APP_ID=
+EBAY_CERT_ID=
+EBAY_DEV_ID=
+SENDGRID_API_KEY=
+STRIPE_SECRET=
+STRIPE_WEBHOOK_SECRET=
+frontend/.env.example
+ini
+Copy
+Edit
+VITE_API_BASE=http://localhost:8000
+VITE_AMZ_TAG=yourid-20
+VITE_EBAY_CAMPID=123456
+VITE_EBAY_CUSTOMID=FZ
+VITE_APP_ENV=demo
+Data Model (migrate from “toy” → “item”)
+backend/app/db/models.py (essentials)
+python
+Copy
+Edit
+from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Numeric, JSON
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy.sql import func
+import uuid
+from .session import Base
+
+class ItemAnalysis(Base):
+    __tablename__ = "item_analysis"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    item_name = Column(String, nullable=False)
+    categories = Column(ARRAY(String), default=[])
+    brand = Column(String)
+    model = Column(String)
+    upc_ean = Column(String)
+    size = Column(String)
+    color = Column(String)
+    condition = Column(Integer)        # 1-10
+    confidence = Column(Float)
+    image_url = Column(String)
+    cost_basis = Column(Numeric)
+    est_low = Column(Numeric)
+    est_high = Column(Numeric)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    owner_user_id = Column(UUID(as_uuid=True))
+    listing_slug = Column(String, unique=True)
+    pro_paid = Column(Boolean, default=False)
+
+class Listing(Base):
+    __tablename__ = "listing"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    analysis_id = Column(UUID(as_uuid=True), nullable=False)
+    slug = Column(String, unique=True, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(String)
+    photos = Column(JSON, default=[])
+    condition = Column(Integer)
+    estimated_low = Column(Numeric)
+    estimated_high = Column(Numeric)
+    seller_email = Column(String)   # encrypt at rest in prod
+    seller_phone = Column(String)
+    is_public = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+Create alembic migration or recreate tables for MVP.
+
+Provider Sockets (pattern)
+backend/app/services/analysis/base.py
+python
+Copy
+Edit
+from abc import ABC, abstractmethod
+from typing import Dict, Any
+
+class AnalysisProvider(ABC):
+    @abstractmethod
+    def analyze(self, image_url: str = None, barcode: str = None) -> Dict[str, Any]:
+        """Return { item_name, categories[], brand, model, condition(1-10), confidence, imageUrl }"""
+        ...
+backend/app/services/analysis/mock_provider.py
+python
+Copy
+Edit
+from .base import AnalysisProvider
+import random
+
+class MockAnalysisProvider(AnalysisProvider):
+    def analyze(self, image_url=None, barcode=None):
+        return {
+            "item_name": "Vintage Nintendo Game Boy",
+            "categories": ["electronics", "vintage"],
+            "brand": "Nintendo",
+            "model": "DMG-01",
+            "condition": random.randint(5,8),
+            "confidence": 0.73,
+            "imageUrl": image_url or "https://picsum.photos/seed/fz/600/600"
+        }
+backend/app/services/registry.py
+python
+Copy
+Edit
+import os
+from .analysis.mock_provider import MockAnalysisProvider
+# from .analysis.openai_provider_stub import OpenAIVisionProvider
+from .pricing.mock_provider import MockPricingProvider
+# from .pricing.ebay_provider_stub import EbayPricingProvider
+from .email.log_provider import LogEmailProvider
+# from .email.sendgrid_stub import SendgridEmailProvider
+from .payments.demo_provider import DemoPaymentsProvider
+# from .payments.stripe_stub import StripePaymentsProvider
+
+def get_analysis():
+    p = os.getenv("ANALYSIS_PROVIDER","mock")
+    if p == "mock": return MockAnalysisProvider()
+    # if p == "openai": return OpenAIVisionProvider(os.getenv("OPENAI_API_KEY"))
+    raise ValueError(f"Unknown ANALYSIS_PROVIDER={p}")
+
+def get_pricing():
+    p = os.getenv("PRICING_PROVIDER","mock")
+    if p == "mock": return MockPricingProvider()
+    # if p == "ebay_api": return EbayPricingProvider(...)
+    raise ValueError(f"Unknown PRICING_PROVIDER={p}")
+
+def get_email():
+    p = os.getenv("EMAIL_PROVIDER","log")
+    if p == "log": return LogEmailProvider()
+    # if p == "sendgrid": return SendgridEmailProvider(os.getenv("SENDGRID_API_KEY"))
+    raise ValueError(f"Unknown EMAIL_PROVIDER={p}")
+
+def get_payments():
+    p = os.getenv("PAYMENTS_PROVIDER","demo")
+    if p == "demo": return DemoPaymentsProvider()
+    # if p == "stripe": return StripePaymentsProvider(os.getenv("STRIPE_SECRET"))
+    raise ValueError(f"Unknown PAYMENTS_PROVIDER={p}")
+Create similar base/mock/stub for pricing, marketplace, email, payments.
+
+FastAPI Routes (stubs that work in DEMO)
+backend/app/api/routes/analysis.py
+python
+Copy
+Edit
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
+from ...services.registry import get_analysis
+from ...db.session import db_session
+from ...db.models import ItemAnalysis
+
+router = APIRouter(prefix="/api/v1/analysis", tags=["analysis"])
+
+class AnalyzeReq(BaseModel):
+    image_url: str | None = None
+    barcode: str | None = None
+    cost_basis: float | None = None
+    categories: list[str] | None = None
+
+@router.post("/analyze-item")
+def analyze_item(req: AnalyzeReq, session=Depends(db_session)):
+    provider = get_analysis()
+    result = provider.analyze(image_url=req.image_url, barcode=req.barcode)
+    row = ItemAnalysis(
+        item_name=result["item_name"], categories=result["categories"],
+        brand=result.get("brand"), model=result.get("model"),
+        condition=result["condition"], confidence=result["confidence"],
+        image_url=result.get("imageUrl"), cost_basis=req.cost_basis
+    )
+    session.add(row); session.commit(); session.refresh(row)
+    return {"analysisId": str(row.id), **result}
+backend/app/api/routes/pricing.py (mocked)
+python
+Copy
+Edit
+from fastapi import APIRouter
+router = APIRouter(prefix="/api/v1/pricing", tags=["pricing"])
+
+@router.get("/history/{item_name}")
+def pricing_history(item_name: str):
+    return [
+        {"date":"2025-07-15","price":75.00,"condition":7,"marketplace":"eBay"},
+        {"date":"2025-06-30","price":68.00,"condition":6,"marketplace":"Mercari"},
+        {"date":"2025-06-10","price":60.00,"condition":6,"marketplace":"eBay"},
+    ]
+
+@router.get("/estimate")
+def estimate(item_name: str, condition: int):
+    base = 60
+    low, high = base * 0.9, base * 1.3
+    return {"low": low, "high": high, "confidence": 0.82}
+backend/app/api/routes/listings.py
+python
+Copy
+Edit
+from fastapi import APIRouter, BackgroundTasks
+from pydantic import BaseModel
+from ...db.session import db_session
+from ...db.models import Listing, ItemAnalysis
+from ...services.registry import get_email
+from ...utils.slug import slugify
+
+router = APIRouter(prefix="/api/v1/listings", tags=["listings"])
+
+class CreateListingReq(BaseModel):
+    analysisId: str
+    title: str | None = None
+    description: str | None = None
+    seller_email: str
+    seller_phone: str | None = None
+
+@router.post("")
+def create_listing(req: CreateListingReq, session=Depends(db_session)):
+    analysis = session.get(ItemAnalysis, req.analysisId)
+    slug = slugify((req.title or analysis.item_name))
+    listing = Listing(
+        analysis_id=analysis.id, slug=slug,
+        title=req.title or analysis.item_name,
+        description=req.description, photos=[analysis.image_url],
+        condition=analysis.condition,
+        estimated_low=analysis.est_low, estimated_high=analysis.est_high,
+        seller_email=req.seller_email, seller_phone=req.seller_phone
+    )
+    session.add(listing); session.commit(); session.refresh(listing)
+    return {"slug": listing.slug, "url": f"/listing/{listing.slug}"}
+
+class ContactReq(BaseModel):
+    message: str
+    buyer_contact: str | None = None
+
+@router.post("/{id}/contact")
+def contact_seller(id: str, payload: ContactReq, bg: BackgroundTasks, session=Depends(db_session)):
+    listing = session.query(Listing).filter_by(id=id).first()
+    email = get_email()
+    bg.add_task(email.send, to=listing.seller_email,
+                subject="New inquiry on your listing",
+                body=f"{payload.message}\nBuyer contact: {payload.buyer_contact or 'Not provided'}")
+    return {"status":"sent"}
+backend/app/api/routes/seo.py (sitemap)
+python
+Copy
+Edit
+from fastapi import APIRouter, Response
+from ...db.session import db_session
+from ...db.models import Listing
+
+router = APIRouter(tags=["seo"])
+
+@router.get("/sitemap.xml")
+def sitemap(session=Depends(db_session)):
+    urls = session.query(Listing.slug).all()
+    body = ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>","<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"]
+    for (slug,) in urls:
+        body.append(f"<url><loc>https://YOURDOMAIN.com/listing/{slug}</loc></url>")
+    body.append("</urlset>")
+    return Response("\n".join(body), media_type="application/xml")
+Add health.py (/healthz, /readyz) and mount all routers in main.py.
+
+Frontend (PWA) Scaffolding
+frontend/src/lib/api.ts
+ts
+Copy
+Edit
+const API = import.meta.env.VITE_API_BASE;
+
+export async function analyzeItem(payload: any) {
+  const r = await fetch(`${API}/api/v1/analysis/analyze-item`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  });
+  return r.json();
+}
+export async function getHistory(name: string) {
+  const r = await fetch(`${API}/api/v1/pricing/history/${encodeURIComponent(name)}`);
+  return r.json();
+}
+export async function getEstimate(q: Record<string,string|number>) {
+  const p = new URLSearchParams(q as any).toString();
+  const r = await fetch(`${API}/api/v1/pricing/estimate?${p}`);
+  return r.json();
+}
+export async function createListing(body: any){
+  const r = await fetch(`${API}/api/v1/listings`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  return r.json();
+}
+frontend/src/App.tsx (routes skeleton)
+tsx
+Copy
+Edit
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Results from "./pages/Results";
+import Listing from "./pages/Listing";
+import Pro from "./pages/Pro";
+import Directory from "./pages/Directory";
+
+export default function App(){
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home/>}/>
+        <Route path="/results/:analysisId" element={<Results/>}/>
+        <Route path="/listing/:slug" element={<Listing/>}/>
+        <Route path="/pro" element={<Pro/>}/>
+        <Route path="/directory" element={<Directory/>}/>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+frontend/src/pages/Home.tsx (upload + barcode)
+tsx
+Copy
+Edit
+import { useState } from "react";
+import { analyzeItem } from "../lib/api";
+import { useNavigate } from "react-router-dom";
+
+export default function Home(){
+  const nav = useNavigate();
+  const [file, setFile] = useState<File|null>(null);
+  const [barcode, setBarcode] = useState("");
+
+  async function onScan(){
+    // TODO: upload to storage or convert to data URL for demo
+    const image_url = file ? URL.createObjectURL(file) : undefined;
+    const res = await analyzeItem({ image_url, barcode });
+    nav(`/results/${res.analysisId}`, { state: res });
+  }
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold">FlipperZap</h1>
+      <input type="file" accept="image/*" capture="environment" onChange={e=>setFile(e.target.files?.[0]||null)}/>
+      <input className="border p-2 block my-2" placeholder="Barcode (optional)" value={barcode} onChange={e=>setBarcode(e.target.value)}/>
+      <button className="btn" onClick={onScan}>Scan & Analyze</button>
+    </div>
+  );
+}
+frontend/src/pages/Results.tsx (key elements)
+Show item name, condition/confidence.
+
+Fetch history + estimate; compute highest/avg.
+
+Buttons:
+
+Amazon: https://www.amazon.com/s?k=${encodeURIComponent(name)}&tag=${import.meta.env.VITE_AMZ_TAG}
+
+eBay: https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(name)}&campid=${import.meta.env.VITE_EBAY_CAMPID}&customid=${import.meta.env.VITE_EBAY_CUSTOMID}
+
+List on FlipperZap (free) → modal: email/phone → call createListing.
+
+Pro Valuation ($0.99) → call /api/v1/pro/checkout (demo returns fake URL).
+
+(Implement similarly; render “Recent Comps” list. Guard empty states.)
+
+frontend/src/pages/Listing.tsx
+Fetch /api/v1/listings/{slug} → SSR is ideal; for MVP, client fetch OK.
+
+Insert JSON-LD Product in <script type="application/ld+json">.
+
+Minimal Admin (optional but helpful)
+/admin: list Analyses & Listings (search, feature, hide).
+
+Hard-gate via simple env password for MVP.
+
+Infra
+infra/docker-compose.dev.yml
+yaml
+Copy
+Edit
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: flipperzap
+    ports: ["5432:5432"]
+  api:
+    build: ../backend
+    env_file: ../backend/.env.example
+    depends_on: [db]
+    ports: ["8000:8000"]
+  web:
+    build: ../frontend
+    environment:
+      - VITE_API_BASE=http://localhost:8000
+    ports: ["5173:5173"]
+Vercel for frontend, Railway for backend+DB.
+
