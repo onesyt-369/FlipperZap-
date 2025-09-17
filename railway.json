@@ -4,21 +4,11 @@
   "services": [
     {
       "name": "api",
-      "rootDirectory": "services/api",
-      "envVariables": [
-        "OPENAI_API_KEY",
-        "ANTHROPIC_API_KEY",
-        "GEMINI_API_KEY",
-        "NODE_ENV"
-      ]
+      "rootDirectory": "services/api"
     },
     {
       "name": "web",
-      "rootDirectory": "services/web",
-      "envVariables": [
-        "NEXT_PUBLIC_API_URL",
-        "NODE_ENV"
-      ]
+      "rootDirectory": "services/web"
     }
   ]
 }
