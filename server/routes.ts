@@ -343,7 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const connections = await storage.getMarketplaceConnections(userId);
       
       // Return status for all supported marketplaces
-      const marketplaces = ['ebay', 'amazon', 'wordpress'];
+      const marketplaces = ['ebay', 'amazon', 'facebook', 'craigslist', 'wordpress'];
       const status = marketplaces.map(marketplace => {
         const connection = connections.find(c => c.marketplace === marketplace);
         return {

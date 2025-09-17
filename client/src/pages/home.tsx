@@ -29,6 +29,8 @@ export default function Home() {
     switch (marketplace) {
       case 'ebay': return 'fab fa-ebay';
       case 'amazon': return 'fab fa-amazon';
+      case 'facebook': return 'fab fa-facebook';
+      case 'craigslist': return 'fas fa-list-alt';
       case 'wordpress': return 'fab fa-wordpress';
       default: return 'fas fa-store';
     }

@@ -80,6 +80,10 @@ export class LiveMarketplaceService implements IMarketplaceService {
         return this.createEbayListing(listing);
       case 'amazon':
         return this.createAmazonListing(listing);
+      case 'facebook':
+        return this.createFacebookListing(listing);
+      case 'craigslist':
+        return this.createCraigslistListing(listing);
       default:
         throw new Error(`Unsupported marketplace: ${marketplace}`);
     }
@@ -98,9 +102,21 @@ export class LiveMarketplaceService implements IMarketplaceService {
     if (!this.amazonApiKey) {
       throw new Error('Amazon API key not configured');
     }
-    
+
     // Implementation would go here for actual Amazon API
     throw new Error('Amazon integration not yet implemented');
+  }
+
+  private async createFacebookListing(listing: Omit<MarketplaceListing, 'id' | 'url'>): Promise<MarketplaceListing> {
+    // Facebook Marketplace API implementation would go here
+    // For now, throw not implemented
+    throw new Error('Facebook Marketplace integration not yet implemented');
+  }
+
+  private async createCraigslistListing(listing: Omit<MarketplaceListing, 'id' | 'url'>): Promise<MarketplaceListing> {
+    // Craigslist API implementation would go here
+    // For now, throw not implemented
+    throw new Error('Craigslist integration not yet implemented');
   }
 
   async updateListing(marketplace: string, listingId: string, updates: Partial<MarketplaceListing>): Promise<MarketplaceListing> {

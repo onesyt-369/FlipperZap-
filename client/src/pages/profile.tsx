@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -5,9 +6,47 @@ import { BottomNavigation } from "@/components/bottom-navigation";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Profile() {
+  // Settings state with localStorage persistence
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [autoListEnabled, setAutoListEnabled] = useState(false);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+
   const { data: marketplaceConnections = [] } = useQuery({
     queryKey: ['/api/v1/marketplace/connections'],
   });
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const savedNotifications = localStorage.getItem('flipperzap-notifications');
+    const savedAutoList = localStorage.getItem('flipperzap-autolist');
+    const savedDarkMode = localStorage.getItem('flipperzap-darkmode');
+
+    if (savedNotifications !== null) {
+      setNotificationsEnabled(JSON.parse(savedNotifications));
+    }
+    if (savedAutoList !== null) {
+      setAutoListEnabled(JSON.parse(savedAutoList));
+    }
+    if (savedDarkMode !== null) {
+      setDarkModeEnabled(JSON.parse(savedDarkMode));
+    }
+  }, []);
+
+  // Save settings to localStorage when changed
+  const handleNotificationsChange = (checked: boolean) => {
+    setNotificationsEnabled(checked);
+    localStorage.setItem('flipperzap-notifications', JSON.stringify(checked));
+  };
+
+  const handleAutoListChange = (checked: boolean) => {
+    setAutoListEnabled(checked);
+    localStorage.setItem('flipperzap-autolist', JSON.stringify(checked));
+  };
+
+  const handleDarkModeChange = (checked: boolean) => {
+    setDarkModeEnabled(checked);
+    localStorage.setItem('flipperzap-darkmode', JSON.stringify(checked));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -44,7 +83,11 @@ export default function Profile() {
                 <div className="font-medium text-gray-900">Push Notifications</div>
                 <div className="text-sm text-gray-600">Get notified about scan results</div>
               </div>
-              <Switch defaultChecked data-testid="switch-notifications" />
+              <Switch
+                checked={notificationsEnabled}
+                onCheckedChange={handleNotificationsChange}
+                data-testid="switch-notifications"
+              />
             </div>
 
             <div className="flex items-center justify-between">
@@ -52,7 +95,11 @@ export default function Profile() {
                 <div className="font-medium text-gray-900">Auto-list Items</div>
                 <div className="text-sm text-gray-600">Automatically create listings after scan</div>
               </div>
-              <Switch data-testid="switch-auto-list" />
+              <Switch
+                checked={autoListEnabled}
+                onCheckedChange={handleAutoListChange}
+                data-testid="switch-auto-list"
+              />
             </div>
 
             <div className="flex items-center justify-between">
@@ -60,7 +107,11 @@ export default function Profile() {
                 <div className="font-medium text-gray-900">Dark Mode</div>
                 <div className="text-sm text-gray-600">Use dark theme</div>
               </div>
-              <Switch data-testid="switch-dark-mode" />
+              <Switch
+                checked={darkModeEnabled}
+                onCheckedChange={handleDarkModeChange}
+                data-testid="switch-dark-mode"
+              />
             </div>
           </div>
         </Card>
@@ -73,7 +124,11 @@ export default function Profile() {
               <div key={marketplace.marketplace} className="flex items-center justify-between py-2">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <i className={`fab fa-${marketplace.marketplace} text-blue-600`}></i>
+                    <i className={`${
+                      marketplace.marketplace === 'facebook' ? 'fab fa-facebook' :
+                      marketplace.marketplace === 'craigslist' ? 'fas fa-list-alt' :
+                      `fab fa-${marketplace.marketplace}`
+                    } text-blue-600`}></i>
                   </div>
                   <div>
                     <div className="font-medium text-gray-900 capitalize">
