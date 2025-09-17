@@ -9,13 +9,15 @@ interface CameraCaptureProps {
 }
 
 export function CameraCapture({ onClose, onCapture }: CameraCaptureProps) {
+
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [hasCaptured, setHasCaptured] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
   const { videoRef, stream, startCamera, stopCamera, isSupported } = useCamera();
 
   const handleCapture = useCallback(() => {
+    if (hasCaptured) return;
     if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
@@ -33,7 +35,8 @@ export function CameraCapture({ onClose, onCapture }: CameraCaptureProps) {
 
     // Convert canvas to blob and create file
     canvas.toBlob((blob) => {
-      if (blob) {
+      if (blob && !hasCaptured) {
+        setHasCaptured(true);
         const file = new File([blob], `toy-scan-${Date.now()}.jpg`, {
           type: 'image/jpeg'
         });
@@ -42,11 +45,13 @@ export function CameraCapture({ onClose, onCapture }: CameraCaptureProps) {
         stopCamera();
       }
     }, 'image/jpeg', 0.8);
-  }, [onCapture, stopCamera]);
+  }, [onCapture, stopCamera, hasCaptured]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (hasCaptured) return;
     const file = event.target.files?.[0];
     if (file) {
+      setHasCaptured(true);
       onCapture(file);
       // Create preview
       const reader = new FileReader();
@@ -59,6 +64,7 @@ export function CameraCapture({ onClose, onCapture }: CameraCaptureProps) {
 
   const handleRetake = () => {
     setCapturedImage(null);
+    setHasCaptured(false);
     startCamera();
   };
 

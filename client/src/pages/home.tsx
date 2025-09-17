@@ -95,8 +95,11 @@ export default function Home() {
       const formData = new FormData();
       formData.append('image', file);
 
-      // Upload and analyze the image
-      const response = await fetch('/api/v1/scans/analyze', {
+      // Use VITE_API_BASE for the backend URL
+      const apiBase = import.meta.env.VITE_API_BASE || '';
+      const uploadUrl = apiBase.replace(/\/$/, '') + '/api/v1/scans/analyze';
+
+      const response = await fetch(uploadUrl, {
         method: 'POST',
         headers: {
           'X-User-Id': 'demo-user'
@@ -110,17 +113,17 @@ export default function Home() {
           title: "Analysis Started",
           description: "Your item is being analyzed. You'll see results shortly!",
         });
-        
         // Refresh scans data
         // queryClient.invalidateQueries(['/api/v1/scans']);
       } else {
-        throw new Error('Upload failed');
+        const errorText = await response.text();
+        throw new Error(`Upload failed: ${response.status} ${response.statusText} - ${errorText}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
       toast({
         title: "Upload Error",
-        description: "Failed to upload image. Please try again.",
+        description: error?.message || 'Unknown error',
         variant: "destructive"
       });
     }
@@ -131,7 +134,7 @@ export default function Home() {
       <CameraCapture
         onClose={() => setShowCamera(false)}
         onCapture={(file) => {
-          console.log('Image captured:', file);
+          handleImageCapture(file);
           setShowCamera(false);
         }}
       />

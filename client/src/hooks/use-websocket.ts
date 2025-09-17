@@ -20,11 +20,17 @@ export function useWebSocket() {
     }
 
     setConnectionStatus('connecting');
-    
-    // Use the current domain for WebSocket connection with specific path
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/api`;
-    
+
+    // Use VITE_WS_BASE if set, otherwise fallback to current domain
+    let wsUrl = '';
+    const envWsBase = import.meta.env.VITE_WS_BASE;
+    if (envWsBase) {
+      wsUrl = envWsBase.replace(/\/$/, '') + '/ws/api';
+    } else {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      wsUrl = `${protocol}//${window.location.host}/ws/api`;
+    }
+
     ws.current = new WebSocket(wsUrl);
 
     ws.current.onopen = () => {
