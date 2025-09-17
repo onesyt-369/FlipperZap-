@@ -4,7 +4,7 @@
     {
       "name": "api",
       "source": {
-        "rootDirectory": "services/api"
+        "rootDirectory": "api"
       },
       "build": { "builder": "DOCKERFILE" },
       "envVariables": [
@@ -17,7 +17,7 @@
     {
       "name": "web",
       "source": {
-        "rootDirectory": "services/web"
+        "rootDirectory": "web"
       },
       "build": { "builder": "DOCKERFILE" },
       "envVariables": [
