@@ -3,7 +3,9 @@
   "services": [
     {
       "name": "api",
-      "rootDirectory": "services/api",
+      "source": {
+        "rootDirectory": "services/api"
+      },
       "build": { "builder": "DOCKERFILE" },
       "envVariables": [
         "OPENAI_API_KEY",
@@ -14,7 +16,9 @@
     },
     {
       "name": "web",
-      "rootDirectory": "services/web",
+      "source": {
+        "rootDirectory": "services/web"
+      },
       "build": { "builder": "DOCKERFILE" },
       "envVariables": [
         "NEXT_PUBLIC_API_URL",
