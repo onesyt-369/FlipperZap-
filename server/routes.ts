@@ -34,7 +34,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize services
   const aiService = createAIService();
   const marketplaceService = createMarketplaceService();
-  const wsService = initializeWebSocketService(httpServer);
+  // const wsService = initializeWebSocketService(httpServer);
 
   // Kubernetes-style health checks
   app.get('/healthz', async (req, res) => {
@@ -124,7 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Process AI analysis asynchronously
       try {
-        wsService.sendScanUpdate(userId, scan.id, 'analyzing');
+        // wsService.sendScanUpdate(userId, scan.id, 'analyzing');
         
         const analysis = await aiService.analyzeToy(imageUrl);
         
@@ -147,11 +147,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           aiAnalysis: analysis
         });
 
-        wsService.sendScanUpdate(userId, scan.id, 'completed', updatedScan);
+        // wsService.sendScanUpdate(userId, scan.id, 'completed', updatedScan);
       } catch (error) {
         console.error('AI analysis failed:', error);
         await storage.updateScan(scan.id, { status: 'failed' });
-        wsService.sendScanUpdate(userId, scan.id, 'failed', { error: error.message });
+        // wsService.sendScanUpdate(userId, scan.id, 'failed', { error: error.message });
       }
     } catch (error) {
       console.error('Scan creation failed:', error);
@@ -180,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Process AI analysis asynchronously (same as original scan logic)
       try {
-        wsService.sendScanUpdate(userId, scan.id, 'analyzing');
+        // wsService.sendScanUpdate(userId, scan.id, 'analyzing');
         
         const analysis = await aiService.analyzeToy(imageUrl);
         
@@ -201,11 +201,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           aiAnalysis: analysis
         });
 
-        wsService.sendScanUpdate(userId, scan.id, 'completed', updatedScan);
+        // wsService.sendScanUpdate(userId, scan.id, 'completed', updatedScan);
       } catch (error) {
         console.error('AI analysis failed:', error);
         await storage.updateScan(scan.id, { status: 'failed' });
-        wsService.sendScanUpdate(userId, scan.id, 'failed', { error: error.message });
+        // wsService.sendScanUpdate(userId, scan.id, 'failed', { error: error.message });
       }
     } catch (error) {
       console.error('Item analysis failed:', error);

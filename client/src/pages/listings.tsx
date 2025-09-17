@@ -1,9 +1,23 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import type { Listing } from "@shared/schema";
+
+function copyToClipboard(text: string) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text);
+  } else {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+  }
+}
 
 export default function Listings() {
   const { data: listings = [], isLoading } = useQuery<Listing[]>({
@@ -27,6 +41,12 @@ export default function Listings() {
       case 'wordpress': return 'fab fa-wordpress text-blue-600';
       default: return 'fas fa-store text-gray-600';
     }
+  };
+
+  const handleFacebookPost = (listing: Listing) => {
+    const details = `Title: ${listing.title}\nDescription: ${listing.description || ''}\nPrice: $${listing.price}`;
+    copyToClipboard(details);
+    window.open('https://www.facebook.com/marketplace/create/item', '_blank');
   };
 
   return (
@@ -136,6 +156,15 @@ export default function Listings() {
                           data-testid={`button-view-listing-${listing.id}`}
                         >
                           <i className="fas fa-external-link-alt"></i>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Post to Facebook Marketplace"
+                          onClick={() => handleFacebookPost(listing)}
+                          data-testid={`button-facebook-listing-${listing.id}`}
+                        >
+                          <i className="fab fa-facebook text-blue-600"></i>
                         </Button>
                       </div>
                     </div>
