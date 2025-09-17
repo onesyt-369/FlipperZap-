@@ -1,0 +1,26 @@
+[deploy]
+restartPolicyType = "ON_FAILURE"
+
+[[services]]
+name = "api"
+[services.source]
+rootDirectory = "api"
+[services.build]
+builder = "DOCKERFILE"
+envVariables = [
+  "OPENAI_API_KEY",
+  "ANTHROPIC_API_KEY", 
+  "GEMINI_API_KEY",
+  "NODE_ENV"
+]
+
+[[services]]
+name = "web"
+[services.source]
+rootDirectory = "web"
+[services.build]
+builder = "DOCKERFILE"
+envVariables = [
+  "NEXT_PUBLIC_API_URL",
+  "NODE_ENV"
+]
