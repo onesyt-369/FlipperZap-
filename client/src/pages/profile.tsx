@@ -11,12 +11,28 @@ export default function Profile() {
   const [autoListEnabled, setAutoListEnabled] = useState(false);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
+  // Camera settings
+  const [highQualityCamera, setHighQualityCamera] = useState(false);
+  const [cameraFlashEnabled, setCameraFlashEnabled] = useState(false);
+
+  // App behavior settings
+  const [vibrationEnabled, setVibrationEnabled] = useState(true);
+  const [soundEffectsEnabled, setSoundEffectsEnabled] = useState(true);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
+
+  // Marketplace auto-publish settings
+  const [autoPublishEbay, setAutoPublishEbay] = useState(false);
+  const [autoPublishAmazon, setAutoPublishAmazon] = useState(false);
+  const [autoPublishFacebook, setAutoPublishFacebook] = useState(false);
+  const [autoPublishCraigslist, setAutoPublishCraigslist] = useState(false);
+
   const { data: marketplaceConnections = [] } = useQuery({
     queryKey: ['/api/v1/marketplace/connections'],
   });
 
   // Load settings from localStorage on mount
   useEffect(() => {
+    // Core app settings
     const savedNotifications = localStorage.getItem('flipperzap-notifications');
     const savedAutoList = localStorage.getItem('flipperzap-autolist');
     const savedDarkMode = localStorage.getItem('flipperzap-darkmode');
@@ -29,6 +45,51 @@ export default function Profile() {
     }
     if (savedDarkMode !== null) {
       setDarkModeEnabled(JSON.parse(savedDarkMode));
+    }
+
+    // Camera settings
+    const savedHighQualityCamera = localStorage.getItem('flipperzap-high-quality-camera');
+    const savedCameraFlash = localStorage.getItem('flipperzap-camera-flash');
+
+    if (savedHighQualityCamera !== null) {
+      setHighQualityCamera(JSON.parse(savedHighQualityCamera));
+    }
+    if (savedCameraFlash !== null) {
+      setCameraFlashEnabled(JSON.parse(savedCameraFlash));
+    }
+
+    // App behavior settings
+    const savedVibration = localStorage.getItem('flipperzap-vibration');
+    const savedSoundEffects = localStorage.getItem('flipperzap-sound-effects');
+    const savedAnalytics = localStorage.getItem('flipperzap-analytics');
+
+    if (savedVibration !== null) {
+      setVibrationEnabled(JSON.parse(savedVibration));
+    }
+    if (savedSoundEffects !== null) {
+      setSoundEffectsEnabled(JSON.parse(savedSoundEffects));
+    }
+    if (savedAnalytics !== null) {
+      setAnalyticsEnabled(JSON.parse(savedAnalytics));
+    }
+
+    // Marketplace auto-publish settings
+    const savedAutoPublishEbay = localStorage.getItem('flipperzap-auto-publish-ebay');
+    const savedAutoPublishAmazon = localStorage.getItem('flipperzap-auto-publish-amazon');
+    const savedAutoPublishFacebook = localStorage.getItem('flipperzap-auto-publish-facebook');
+    const savedAutoPublishCraigslist = localStorage.getItem('flipperzap-auto-publish-craigslist');
+
+    if (savedAutoPublishEbay !== null) {
+      setAutoPublishEbay(JSON.parse(savedAutoPublishEbay));
+    }
+    if (savedAutoPublishAmazon !== null) {
+      setAutoPublishAmazon(JSON.parse(savedAutoPublishAmazon));
+    }
+    if (savedAutoPublishFacebook !== null) {
+      setAutoPublishFacebook(JSON.parse(savedAutoPublishFacebook));
+    }
+    if (savedAutoPublishCraigslist !== null) {
+      setAutoPublishCraigslist(JSON.parse(savedAutoPublishCraigslist));
     }
   }, []);
 
@@ -46,6 +107,54 @@ export default function Profile() {
   const handleDarkModeChange = (checked: boolean) => {
     setDarkModeEnabled(checked);
     localStorage.setItem('flipperzap-darkmode', JSON.stringify(checked));
+  };
+
+  // Camera settings handlers
+  const handleHighQualityCameraChange = (checked: boolean) => {
+    setHighQualityCamera(checked);
+    localStorage.setItem('flipperzap-high-quality-camera', JSON.stringify(checked));
+  };
+
+  const handleCameraFlashChange = (checked: boolean) => {
+    setCameraFlashEnabled(checked);
+    localStorage.setItem('flipperzap-camera-flash', JSON.stringify(checked));
+  };
+
+  // App behavior handlers
+  const handleVibrationChange = (checked: boolean) => {
+    setVibrationEnabled(checked);
+    localStorage.setItem('flipperzap-vibration', JSON.stringify(checked));
+  };
+
+  const handleSoundEffectsChange = (checked: boolean) => {
+    setSoundEffectsEnabled(checked);
+    localStorage.setItem('flipperzap-sound-effects', JSON.stringify(checked));
+  };
+
+  const handleAnalyticsChange = (checked: boolean) => {
+    setAnalyticsEnabled(checked);
+    localStorage.setItem('flipperzap-analytics', JSON.stringify(checked));
+  };
+
+  // Marketplace auto-publish handlers
+  const handleAutoPublishEbayChange = (checked: boolean) => {
+    setAutoPublishEbay(checked);
+    localStorage.setItem('flipperzap-auto-publish-ebay', JSON.stringify(checked));
+  };
+
+  const handleAutoPublishAmazonChange = (checked: boolean) => {
+    setAutoPublishAmazon(checked);
+    localStorage.setItem('flipperzap-auto-publish-amazon', JSON.stringify(checked));
+  };
+
+  const handleAutoPublishFacebookChange = (checked: boolean) => {
+    setAutoPublishFacebook(checked);
+    localStorage.setItem('flipperzap-auto-publish-facebook', JSON.stringify(checked));
+  };
+
+  const handleAutoPublishCraigslistChange = (checked: boolean) => {
+    setAutoPublishCraigslist(checked);
+    localStorage.setItem('flipperzap-auto-publish-craigslist', JSON.stringify(checked));
   };
 
   return (
@@ -111,6 +220,132 @@ export default function Profile() {
                 checked={darkModeEnabled}
                 onCheckedChange={handleDarkModeChange}
                 data-testid="switch-dark-mode"
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* Camera Settings */}
+        <Card className="p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Camera Settings</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-gray-900">High Quality Mode</div>
+                <div className="text-sm text-gray-600">Use highest camera resolution</div>
+              </div>
+              <Switch
+                checked={highQualityCamera}
+                onCheckedChange={handleHighQualityCameraChange}
+                data-testid="switch-high-quality-camera"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-gray-900">Camera Flash</div>
+                <div className="text-sm text-gray-600">Enable flash for low light photos</div>
+              </div>
+              <Switch
+                checked={cameraFlashEnabled}
+                onCheckedChange={handleCameraFlashChange}
+                data-testid="switch-camera-flash"
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* App Behavior Settings */}
+        <Card className="p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">App Behavior</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-gray-900">Vibration Feedback</div>
+                <div className="text-sm text-gray-600">Vibrate on button presses</div>
+              </div>
+              <Switch
+                checked={vibrationEnabled}
+                onCheckedChange={handleVibrationChange}
+                data-testid="switch-vibration"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-gray-900">Sound Effects</div>
+                <div className="text-sm text-gray-600">Play sounds for actions</div>
+              </div>
+              <Switch
+                checked={soundEffectsEnabled}
+                onCheckedChange={handleSoundEffectsChange}
+                data-testid="switch-sound-effects"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-gray-900">Analytics</div>
+                <div className="text-sm text-gray-600">Help improve the app</div>
+              </div>
+              <Switch
+                checked={analyticsEnabled}
+                onCheckedChange={handleAnalyticsChange}
+                data-testid="switch-analytics"
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* Auto-Publish Settings */}
+        <Card className="p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Auto-Publish to Marketplaces</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-gray-900">Auto-publish to eBay</div>
+                <div className="text-sm text-gray-600">Automatically list on eBay</div>
+              </div>
+              <Switch
+                checked={autoPublishEbay}
+                onCheckedChange={handleAutoPublishEbayChange}
+                data-testid="switch-auto-publish-ebay"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-gray-900">Auto-publish to Amazon</div>
+                <div className="text-sm text-gray-600">Automatically list on Amazon</div>
+              </div>
+              <Switch
+                checked={autoPublishAmazon}
+                onCheckedChange={handleAutoPublishAmazonChange}
+                data-testid="switch-auto-publish-amazon"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-gray-900">Auto-publish to Facebook</div>
+                <div className="text-sm text-gray-600">Automatically list on Facebook Marketplace</div>
+              </div>
+              <Switch
+                checked={autoPublishFacebook}
+                onCheckedChange={handleAutoPublishFacebookChange}
+                data-testid="switch-auto-publish-facebook"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-gray-900">Auto-publish to Craigslist</div>
+                <div className="text-sm text-gray-600">Automatically list on Craigslist</div>
+              </div>
+              <Switch
+                checked={autoPublishCraigslist}
+                onCheckedChange={handleAutoPublishCraigslistChange}
+                data-testid="switch-auto-publish-craigslist"
               />
             </div>
           </div>
