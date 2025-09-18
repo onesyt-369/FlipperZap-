@@ -1,5 +1,37 @@
 import type { Express } from "express";
 import express from "express";
+import { z } from "zod";
+import { logger } from "./logger";
+// --- Example validation for a user-facing route (adjust path as needed) ---
+const listingSchema = z.object({
+  title: z.string().min(1).max(140),
+  price: z.number().nonnegative(),
+  description: z.string().max(2000).optional(),
+});
+
+// Example: create a listing with validation
+// (You can move this to the correct controller or route group as needed)
+// POST /api/v1/listings
+// Body: { title: string, price: number, description?: string }
+// Returns: { ok: true } or { error: "INVALID_BODY", details }
+//
+// To use: Uncomment and connect to your DB logic
+// app.post('/api/v1/listings', (req, res) => { ... })
+
+// Example route:
+// app.post('/api/v1/listings', (req, res) => {
+//   const parse = listingSchema.safeParse(req.body);
+//   if (!parse.success) {
+//     return res.status(400).json({
+//       error: "INVALID_BODY",
+//       details: parse.error.flatten(),
+//     });
+//   }
+//   const listing = parse.data;
+//   // TODO: persist listing (DB call)
+//   logger.info("new listing", { title: listing.title, price: listing.price });
+//   return res.status(201).json({ ok: true });
+// });
 import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";

@@ -1,16 +1,37 @@
 import express, { type Request, Response, NextFunction } from "express";
-// import cors from "cors";
+import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-// import { serverConfig } from "./config";
 
 const app = express();
 
-// // Enable CORS with allowed origins from config
-// app.use(cors({
-//   origin: serverConfig.allowedOrigins,
-//   credentials: true
-// }));
+// Enable CORS with allowed origins from environment
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:5173'];
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+}));
+
+// Add Helmet for security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+    },
+  },
+}));
+
+// Add rate limiter
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+});
+app.use(limiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

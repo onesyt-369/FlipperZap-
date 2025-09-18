@@ -22,12 +22,14 @@ export class MockMarketplaceService implements IMarketplaceService {
     const mockId = `mock_${marketplace}_${Date.now()}`;
     const mockUrl = `https://${marketplace}.com/item/${mockId}`;
     
-    console.log(`MOCK ${marketplace.toUpperCase()} LISTING CREATED:`, {
-      id: mockId,
-      title: listing.title,
-      price: listing.price,
-      url: mockUrl
-    });
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`MOCK ${marketplace.toUpperCase()} LISTING CREATED:`, {
+        id: mockId,
+        title: listing.title,
+        price: listing.price,
+        url: mockUrl
+      });
+    }
     
     return {
       ...listing,
@@ -39,10 +41,12 @@ export class MockMarketplaceService implements IMarketplaceService {
   async updateListing(marketplace: string, listingId: string, updates: Partial<MarketplaceListing>): Promise<MarketplaceListing> {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    console.log(`MOCK ${marketplace.toUpperCase()} LISTING UPDATED:`, {
-      id: listingId,
-      updates
-    });
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`MOCK ${marketplace.toUpperCase()} LISTING UPDATED:`, {
+        id: listingId,
+        updates
+      });
+    }
     
     return {
       id: listingId,
@@ -56,18 +60,21 @@ export class MockMarketplaceService implements IMarketplaceService {
 
   async deleteListing(marketplace: string, listingId: string): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 500));
-    console.log(`MOCK ${marketplace.toUpperCase()} LISTING DELETED:`, listingId);
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`MOCK ${marketplace.toUpperCase()} LISTING DELETED:`, listingId);
+    }
   }
 
   async getListingStatus(marketplace: string, listingId: string): Promise<string> {
     const statuses = ['active', 'sold', 'pending', 'cancelled'];
-    return statuses[Math.floor(Math.random() * statuses.length)];
+  return statuses[Math.floor(Math.random() * statuses.length)];
   }
 }
 
 export class LiveMarketplaceService implements IMarketplaceService {
   private ebayApiKey?: string;
   private amazonApiKey?: string;
+  // Reminder: Ensure DB migrations/seeds are run in production if needed.
   
   constructor(ebayApiKey?: string, amazonApiKey?: string) {
     this.ebayApiKey = ebayApiKey;
