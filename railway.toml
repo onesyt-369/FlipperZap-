@@ -9,9 +9,8 @@ rootDirectory = "api"
 builder = "DOCKERFILE"
 envVariables = [
   "OPENAI_API_KEY",
-  "ANTHROPIC_API_KEY", 
-  "GEMINI_API_KEY",
-  "NODE_ENV"
+  "ANTHROPIC_API_KEY",
+  "GEMINI_API_KEY"
 ]
 
 [[services]]
@@ -21,6 +20,5 @@ rootDirectory = "web"
 [services.build]
 builder = "DOCKERFILE"
 envVariables = [
-  "NEXT_PUBLIC_API_URL",
-  "NODE_ENV"
+  "NEXT_PUBLIC_API_URL"
 ]
